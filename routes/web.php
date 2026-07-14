@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,15 +17,20 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-Route::name('index-practice')->get('/', function () {
-    return view('pages.practice.index');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
+    Route::get('/admin/dashboard', [DashboardController::class, 'admin']);
+
 });
 
-Route::name('practice.')->group(function () {
-    Route::name('first')->get('practice/1', function () {
-        return view('pages.practice.1');
-    });
-    Route::name('second')->get('practice/2', function () {
-        return view('pages.practice.2');
-    });
+Route::middleware(['auth', 'role:admin,manager'])->group(function () {
+
+    Route::get('/manager/dashboard', [DashboardController::class, 'manager']);
+
+});
+
+Route::middleware(['auth', 'role:admin,manager,staff'])->group(function () {
+
+    Route::get('/staff/dashboard', [DashboardController::class, 'staff']);
+
 });
