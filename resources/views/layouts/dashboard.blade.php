@@ -35,15 +35,14 @@
 
         <x-sidebar.admin-sidebar />
 
-        <div
-            id="main-content"
-            class="relative w-full min-h-screen overflow-y-auto bg-gray-900 lg:ml-64">
+     <div id="main-content"
+class="relative min-h-screen w-full overflow-y-auto bg-gray-900 lg:ml-64">
 
-            <main class="p-6">
+            <main class="min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-900">
 
-                @yield('content')
+    @yield('content')
 
-            </main>
+</main>
 
             <x-footer-dashboard />
 
