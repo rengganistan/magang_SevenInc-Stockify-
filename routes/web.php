@@ -5,6 +5,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\StockTransactionController;
+use App\Http\Controllers\ReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -48,11 +52,21 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy'])
     ->name('users.destroy');
 
-    /*
+    Route::resource('products', ProductController::class);
+
+    Route::resource('suppliers', SupplierController::class);
+
+    Route::resource(
+    'stock-transactions',
+    StockTransactionController::class
+);
+
+/*
 |--------------------------------------------------------------------------
-| CATEGORY
+| Category
 |--------------------------------------------------------------------------
 */
+
 
 Route::get('/categories',[CategoryController::class,'index'])
         ->name('categories.index');
@@ -71,6 +85,19 @@ Route::put('/categories/{id}',[CategoryController::class,'update'])
 
 Route::delete('/categories/{id}',[CategoryController::class,'destroy'])
         ->name('categories.destroy');
+});
+
+Route::prefix('reports')->group(function () {
+
+    Route::get('/stock', [ReportController::class, 'stock'])
+        ->name('reports.stock');
+
+    Route::get('/incoming', [ReportController::class, 'incoming'])
+        ->name('reports.incoming');
+
+    Route::get('/outgoing', [ReportController::class, 'outgoing'])
+        ->name('reports.outgoing');
+
 });
 
 Route::get('/manager/dashboard', [DashboardController::class, 'manager'])

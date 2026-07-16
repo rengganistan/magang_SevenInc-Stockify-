@@ -169,7 +169,7 @@
 
                                     <span class="inline-flex rounded-full bg-yellow-500 px-3 py-1 text-sm font-medium text-white">
 
-                                        Manager
+                                        Manager Gudang
 
                                     </span>
 
@@ -179,7 +179,7 @@
 
                                     <span class="inline-flex rounded-full bg-green-600 px-3 py-1 text-sm font-medium text-white">
 
-                                        Staff
+                                        Staff Gudang
 
                                     </span>
 

@@ -21,4 +21,9 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
     ];
+
+    public function stockTransactions()
+{
+    return $this->hasMany(StockTransaction::class);
+}
 }

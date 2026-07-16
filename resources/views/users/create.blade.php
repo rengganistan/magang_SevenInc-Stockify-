@@ -138,9 +138,17 @@
 
                             class="block w-full rounded-xl border border-gray-600 bg-gray-700 px-4 py-3 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
 
-                            <option value="admin">Admin</option>
-                            <option value="manager">Manager</option>
-                            <option value="staff" selected>Staff</option>
+                            <option value="admin">
+                                Admin
+                            </option>
+
+                            <option value="manager">
+                                Manajer Gudang
+                            </option>
+
+                            <option value="staff">
+                                Staff Gudang
+                            </option>
 
                         </select>
 

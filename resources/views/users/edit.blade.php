@@ -159,22 +159,24 @@
 
                         <select
                             name="role"
+                            class="w-full rounded-xl border border-gray-600 bg-gray-700 text-white px-4 py-3">
 
-                            class="block w-full rounded-xl border border-gray-600 bg-gray-700 px-4 py-3 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-
-                            <option value="admin"
-                                {{ $user->role=='admin' ? 'selected' : '' }}>
+                            <option
+                                value="admin"
+                                {{ old('role',$user->role)=='admin' ? 'selected' : '' }}>
                                 Admin
                             </option>
 
-                            <option value="manager"
-                                {{ $user->role=='manager' ? 'selected' : '' }}>
-                                Manager
+                            <option
+                                value="manager"
+                                {{ old('role',$user->role)=='manager' ? 'selected' : '' }}>
+                                Manajer Gudang
                             </option>
 
-                            <option value="staff"
-                                {{ $user->role=='staff' ? 'selected' : '' }}>
-                                Staff
+                            <option
+                                value="staff"
+                                {{ old('role',$user->role)=='staff' ? 'selected' : '' }}>
+                                Staff Gudang
                             </option>
 
                         </select>
