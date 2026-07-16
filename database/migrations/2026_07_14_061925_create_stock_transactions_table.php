@@ -12,26 +12,37 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('stock_transactions', function (Blueprint $table) {
+
             $table->id();
-             $table->foreignId('product_id')
-                ->constrained('products')
+
+            $table->foreignId('product_id')
+                ->constrained()
                 ->cascadeOnDelete();
 
             $table->foreignId('user_id')
-                ->constrained('users')
+                ->constrained()
                 ->cascadeOnDelete();
 
-            $table->enum('type', ['in', 'out']);
+            $table->enum('type', [
+                'Masuk',
+                'Keluar'
+            ]);
 
             $table->integer('quantity');
 
             $table->date('date');
 
-            $table->enum('status', ['pending', 'completed', 'cancelled'])
-                ->default('pending');
+            $table->enum('status', [
+                'Pending',
+                'Diterima',
+                'Ditolak',
+                'Dikeluarkan'
+            ])->default('Pending');
 
             $table->text('notes')->nullable();
+
             $table->timestamps();
+
         });
     }
 
