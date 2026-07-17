@@ -2,11 +2,15 @@
 
 @section('content')
 
-<div>
+<div class="w-full px-4 py-6 sm:px-6 lg:px-8">
 
     <div class="flex justify-between items-center mb-8">
 
         <div>
+
+            <p class="text-sm text-gray-400 mb-2">
+                Dashboard / Kategori
+            </p>
 
             <h1 class="text-4xl font-bold text-white">
 

@@ -18,13 +18,13 @@
         routeName="categories.index"
         title="Kategori"/>
 
+        <x-sidebar-menu-dashboard
+        routeName="suppliers.index"
+        title="Supplier"/>
+
     <x-sidebar-menu-dashboard
         routeName="products.index"
         title="Produk"/>
-
-    <x-sidebar-menu-dashboard
-        routeName="suppliers.index"
-        title="Supplier"/>
 
     <li class="pt-4">
         <span class="px-3 text-xs font-bold uppercase text-gray-400">
@@ -41,6 +41,10 @@
         <x-sidebar-menu-dashboard
             routeName="transactions.outgoing"
             title="Barang Keluar"/>
+
+        <x-sidebar-menu-dashboard
+            routeName="stock-opname.index"
+            title="Stock Opname"/>
 
     </div>
 

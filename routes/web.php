@@ -7,8 +7,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductAttributeController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\StockTransactionController;
+use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 /*
@@ -56,6 +58,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::resource('products', ProductController::class);
 
+    // Atribut Produk
+    Route::post('/products/{productId}/attributes', [ProductAttributeController::class, 'store'])
+        ->name('product-attributes.store');
+
+    Route::delete('/products/{productId}/attributes/{id}', [ProductAttributeController::class, 'destroy'])
+        ->name('product-attributes.destroy');
+
     Route::resource('suppliers', SupplierController::class);
 
     /*
@@ -97,6 +106,29 @@ Route::delete(
     '/transactions/{id}',
     [StockTransactionController::class,'destroy']
 )->name('transactions.destroy');
+
+/*
+|--------------------------------------------------------------------------
+| Stock Opname
+|--------------------------------------------------------------------------
+*/
+Route::get('/stock-opname', [StockOpnameController::class, 'index'])
+    ->name('stock-opname.index');
+
+Route::get('/stock-opname/create', [StockOpnameController::class, 'create'])
+    ->name('stock-opname.create');
+
+Route::post('/stock-opname', [StockOpnameController::class, 'store'])
+    ->name('stock-opname.store');
+
+Route::get('/stock-opname/{id}', [StockOpnameController::class, 'show'])
+    ->name('stock-opname.show');
+
+Route::post('/stock-opname/{id}/selesaikan', [StockOpnameController::class, 'selesaikan'])
+    ->name('stock-opname.selesaikan');
+
+Route::delete('/stock-opname/{id}', [StockOpnameController::class, 'destroy'])
+    ->name('stock-opname.destroy');
 }); // <<< ADMIN DITUTUP DI SINI
 
 /*
