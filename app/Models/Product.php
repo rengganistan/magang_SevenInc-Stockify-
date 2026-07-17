@@ -10,7 +10,7 @@ class Product extends Model
 
         'kode',
 
-        'nama',
+        'name',
 
         'category_id',
 

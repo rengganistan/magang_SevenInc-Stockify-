@@ -1,109 +1,156 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
+
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\StockTransactionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingController;
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| LOGIN
 |--------------------------------------------------------------------------
 */
-
-
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
-//login
+
 Route::get('/login', [LoginController::class, 'index'])
     ->name('login');
 
 Route::post('/login', [LoginController::class, 'login'])
     ->name('login.process');
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN
+|--------------------------------------------------------------------------
+*/
 
-// admin
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
 
     Route::get('/admin/dashboard', [DashboardController::class, 'admin'])
         ->name('admin.dashboard');
 
-    Route::get('/users', [UserController::class, 'index'])
-        ->name('users.index');
+    /*
+    |--------------------------------------------------------------------------
+    | Master Data
+    |--------------------------------------------------------------------------
+    */
 
-    Route::get('/users/create', [UserController::class, 'create'])
-        ->name('users.create');
+    Route::resource('users', UserController::class);
 
-    Route::post('/users', [UserController::class, 'store'])
-        ->name('users.store');
-
-    Route::get('/users/{id}/edit', [UserController::class, 'edit'])
-    ->name('users.edit');
-
-    Route::put('/users/{id}', [UserController::class, 'update'])
-    ->name('users.update');
-
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])
-    ->name('users.destroy');
+    Route::resource('categories', CategoryController::class);
 
     Route::resource('products', ProductController::class);
 
     Route::resource('suppliers', SupplierController::class);
 
-    Route::resource(
-    'stock-transactions',
-    StockTransactionController::class
-);
+    /*
+    |--------------------------------------------------------------------------
+    | Transaksi
+    |--------------------------------------------------------------------------
+    */
+Route::get(
+    '/transactions/incoming',
+    [StockTransactionController::class,'incoming']
+)->name('transactions.incoming');
+
+Route::get(
+    '/transactions/outgoing',
+    [StockTransactionController::class,'outgoing']
+)->name('transactions.outgoing');
+
+Route::get(
+    '/transactions/create',
+    [StockTransactionController::class,'create']
+)->name('transactions.create');
+
+Route::post(
+    '/transactions',
+    [StockTransactionController::class,'store']
+)->name('transactions.store');
+
+Route::get(
+    '/transactions/{id}/edit',
+    [StockTransactionController::class,'edit']
+)->name('transactions.edit');
+
+Route::put(
+    '/transactions/{id}',
+    [StockTransactionController::class,'update']
+)->name('transactions.update');
+
+Route::delete(
+    '/transactions/{id}',
+    [StockTransactionController::class,'destroy']
+)->name('transactions.destroy');
+}); // <<< ADMIN DITUTUP DI SINI
 
 /*
 |--------------------------------------------------------------------------
-| Category
+| REPORT
 |--------------------------------------------------------------------------
 */
-
-
-Route::get('/categories',[CategoryController::class,'index'])
-        ->name('categories.index');
-
-Route::get('/categories/create',[CategoryController::class,'create'])
-        ->name('categories.create');
-
-Route::post('/categories',[CategoryController::class,'store'])
-        ->name('categories.store');
-
-Route::get('/categories/{id}/edit',[CategoryController::class,'edit'])
-        ->name('categories.edit');
-
-Route::put('/categories/{id}',[CategoryController::class,'update'])
-        ->name('categories.update');
-
-Route::delete('/categories/{id}',[CategoryController::class,'destroy'])
-        ->name('categories.destroy');
-});
 
 Route::prefix('reports')->group(function () {
 
     Route::get('/stock', [ReportController::class, 'stock'])
         ->name('reports.stock');
 
-    Route::get('/incoming', [ReportController::class, 'incoming'])
-        ->name('reports.incoming');
+    Route::get('/transaction', [ReportController::class, 'transaction'])
+        ->name('reports.transaction');
 
-    Route::get('/outgoing', [ReportController::class, 'outgoing'])
-        ->name('reports.outgoing');
+    Route::get('/activity', [ReportController::class, 'activity'])
+        ->name('reports.activity');
 
 });
 
-Route::get('/manager/dashboard', [DashboardController::class, 'manager'])
-    ->middleware(['auth', 'role:admin,manager'])
-    ->name('manager.dashboard');
 
-Route::get('/staff/dashboard', [DashboardController::class, 'staff'])
-    ->middleware(['auth', 'role:admin,manager,staff'])
-    ->name('staff.dashboard');
+Route::get(
+    '/settings',
+    [SettingController::class, 'index']
+)->name('settings.index');
+
+Route::put(
+    '/settings/{id}',
+    [SettingController::class, 'update']
+)->name('settings.update');
+
+/*
+|--------------------------------------------------------------------------
+| MANAGER
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:admin,manager'])->group(function () {
+
+    Route::get('/manager/dashboard', [DashboardController::class, 'manager'])
+        ->name('manager.dashboard');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| STAFF
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:admin,manager,staff'])->group(function () {
+
+    Route::get('/staff/dashboard', [DashboardController::class, 'staff'])
+        ->name('staff.dashboard');
+
+});

@@ -40,7 +40,7 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'=>'required|max:100',
+            'nama'=>'required|max:100',
             'description'=>'nullable|max:255'
         ]);
 
@@ -67,7 +67,7 @@ class CategoryController extends Controller
     public function update(Request $request,int $id): RedirectResponse
     {
         $validated = $request->validate([
-            'name'=>'required|max:100',
+            'nama'=>'required|max:100',
             'description'=>'nullable|max:255'
         ]);
 

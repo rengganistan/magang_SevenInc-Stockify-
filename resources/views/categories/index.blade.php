@@ -100,7 +100,7 @@
 
                     <td class="px-6 py-5 text-white font-medium">
 
-                        {{ $category->name }}
+                        {{ $category->nama }}
 
                     </td>
 

@@ -26,17 +26,17 @@
 
                     <label class="block mb-2">
 
-                        Category Name
+                        Category Nama
 
                     </label>
 
                     <input
                         type="text"
-                        name="name"
-                        value="{{ old('name') }}"
+                        name="nama"
+                        value="{{ old('nama') }}"
                         class="w-full rounded-lg border p-3">
 
-                    @error('name')
+                    @error('nama')
 
                     <p class="text-red-500 mt-1">
 

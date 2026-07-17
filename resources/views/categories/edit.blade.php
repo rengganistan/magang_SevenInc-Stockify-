@@ -96,8 +96,8 @@
 
                         <input
                             type="text"
-                            name="name"
-                            value="{{ old('name',$category->name) }}"
+                            name="nama"
+                            value="{{ old('nama',$category->nama) }}"
                             placeholder="Masukkan nama kategori"
 
                             class="block
