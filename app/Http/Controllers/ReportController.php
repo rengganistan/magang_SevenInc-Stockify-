@@ -2,35 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Services\ReportService;
 
 class ReportController extends Controller
 {
-    protected $service;
+    protected ReportService $service;
 
     public function __construct(ReportService $service)
     {
         $this->service = $service;
     }
 
-    public function stock()
-    {
-        $products = $this->service->stock();
+    /*
+    |--------------------------------------------------------------------------
+    | LAPORAN STOK
+    |--------------------------------------------------------------------------
+    */
 
-        return view('reports.stock', compact('products'));
+    public function stock(Request $request)
+    {
+        $category = $request->category;
+
+        $products = $this->service->stock($category);
+
+        $categories = $this->service->categories();
+
+        return view(
+            'reports.stock',
+            compact(
+                'products',
+                'categories'
+            )
+        );
     }
 
-    public function incoming()
-    {
-        $transactions = $this->service->incoming();
+    /*
+    |--------------------------------------------------------------------------
+    | LAPORAN TRANSAKSI
+    |--------------------------------------------------------------------------
+    */
 
-        return view('reports.incoming', compact('transactions'));
+    public function transaction(Request $request)
+    {
+        $transactions = $this->service->transaction(
+            $request->type,
+            $request->start_date,
+            $request->end_date
+        );
+
+        return view(
+            'reports.transaction',
+            compact('transactions')
+        );
     }
 
-    public function outgoing()
-    {
-        $transactions = $this->service->outgoing();
+    /*
+    |--------------------------------------------------------------------------
+    | LAPORAN AKTIVITAS USER
+    |--------------------------------------------------------------------------
+    */
 
-        return view('reports.outgoing', compact('transactions'));
+    public function activity()
+    {
+        $activities = $this->service->activity();
+
+        return view(
+            'reports.activity',
+            compact('activities')
+        );
     }
 }

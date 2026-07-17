@@ -6,25 +6,58 @@ use App\Repositories\ReportRepository;
 
 class ReportService
 {
-    protected $repository;
+    protected ReportRepository $repository;
 
     public function __construct(ReportRepository $repository)
     {
         $this->repository = $repository;
     }
 
-    public function stock()
+    /*
+    |--------------------------------------------------------------------------
+    | Laporan Stok
+    |--------------------------------------------------------------------------
+    */
+
+    public function stock($category = null)
     {
-        return $this->repository->stock();
+        return $this->repository->stock($category);
     }
 
-    public function incoming()
+    /*
+    |--------------------------------------------------------------------------
+    | Data Kategori
+    |--------------------------------------------------------------------------
+    */
+
+    public function categories()
     {
-        return $this->repository->incoming();
+        return $this->repository->categories();
     }
 
-    public function outgoing()
+    /*
+    |--------------------------------------------------------------------------
+    | Laporan Transaksi
+    |--------------------------------------------------------------------------
+    */
+
+    public function transaction($type = null, $start = null, $end = null)
     {
-        return $this->repository->outgoing();
+        return $this->repository->transaction(
+            $type,
+            $start,
+            $end
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aktivitas User
+    |--------------------------------------------------------------------------
+    */
+
+    public function activity()
+    {
+        return $this->repository->activity();
     }
 }
