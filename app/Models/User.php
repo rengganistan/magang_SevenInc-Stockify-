@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPasswordContract
 {
+    use CanResetPassword;
+
     protected $fillable = [
         'name',
         'email',
@@ -23,7 +27,7 @@ class User extends Authenticatable
     ];
 
     public function stockTransactions()
-{
-    return $this->hasMany(StockTransaction::class);
-}
+    {
+        return $this->hasMany(StockTransaction::class);
+    }
 }

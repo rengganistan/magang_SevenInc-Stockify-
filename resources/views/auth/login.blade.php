@@ -120,7 +120,7 @@
                     </div>
 
                     <a
-                        href="#"
+                        href="{{ route('password.request') }}"
                         class="text-sm text-blue-400 hover:underline">
 
                         Forgot password?
