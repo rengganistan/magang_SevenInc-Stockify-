@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Services\SupplierService;
@@ -19,7 +20,6 @@ class SupplierController extends Controller
     public function index(): View
     {
         $suppliers = $this->supplierService->getSuppliers();
-
         return view('suppliers.index', compact('suppliers'));
     }
 
@@ -31,58 +31,50 @@ class SupplierController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-
-            'nama' => 'required|max:255',
-
+            'nama'    => 'required|max:255',
             'address' => 'nullable',
-
-            'phone' => 'nullable|max:20',
-
-            'email' => 'nullable|email'
-
+            'phone'   => 'nullable|max:20',
+            'email'   => 'nullable|email',
         ]);
 
         $this->supplierService->createSupplier($validated);
 
-        return redirect()
-            ->route('suppliers.index')
-            ->with('success', 'Supplier berhasil ditambahkan.');
+        ActivityLog::record('Tambah Supplier', 'Supplier', $validated['nama']);
+
+        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
     public function edit(int $id): View
     {
         $supplier = $this->supplierService->getSupplierById($id);
-
         return view('suppliers.edit', compact('supplier'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
-
-            'nama' => 'required|max:255',
-
+            'nama'    => 'required|max:255',
             'address' => 'nullable',
-
-            'phone' => 'nullable|max:20',
-
-            'email' => 'nullable|email'
-
+            'phone'   => 'nullable|max:20',
+            'email'   => 'nullable|email',
         ]);
 
         $this->supplierService->updateSupplier($id, $validated);
 
-        return redirect()
-            ->route('suppliers.index')
-            ->with('success', 'Supplier berhasil diperbarui.');
+        ActivityLog::record('Edit Supplier', 'Supplier', $validated['nama']);
+
+        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil diperbarui.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
+        $supplier = $this->supplierService->getSupplierById($id);
+        $nama     = $supplier->nama;
+
         $this->supplierService->deleteSupplier($id);
 
-        return redirect()
-            ->route('suppliers.index')
-            ->with('success', 'Supplier berhasil dihapus.');
+        ActivityLog::record('Hapus Supplier', 'Supplier', $nama);
+
+        return redirect()->route('suppliers.index')->with('success', 'Supplier berhasil dihapus.');
     }
 }

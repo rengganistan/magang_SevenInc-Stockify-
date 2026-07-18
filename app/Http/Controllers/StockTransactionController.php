@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\StockTransactionService;
@@ -96,6 +97,10 @@ public function outgoing()
         $validated['user_id'] = Auth::id();
 
         $this->service->createTransaction($validated);
+
+        $product = Product::find($validated['product_id']);
+        $action  = $validated['type'] === 'Masuk' ? 'Barang Masuk' : 'Barang Keluar';
+        ActivityLog::record($action, 'Transaksi', $product->nama ?? '-', 'Qty: ' . $validated['quantity']);
 
         $route = $validated['type'] === 'Masuk'
             ? 'transactions.incoming'

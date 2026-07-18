@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ActivityLog;
 use App\Services\StockOpnameService;
 use Illuminate\Http\Request;
 
@@ -59,6 +60,8 @@ class StockOpnameController extends Controller
             $request->input('stok_fisik')
         );
 
+        ActivityLog::record('Buat Stock Opname', 'Stock Opname', 'Tanggal: ' . $request->tanggal, $request->catatan);
+
         return redirect()
             ->route('stock-opname.index')
             ->with('success', 'Stock opname berhasil disimpan sebagai draft.');
@@ -84,6 +87,8 @@ class StockOpnameController extends Controller
     public function selesaikan($id)
     {
         $this->service->selesaikan($id);
+
+        ActivityLog::record('Selesaikan Stock Opname', 'Stock Opname', 'Opname #' . $id);
 
         return redirect()
             ->route('stock-opname.show', $id)

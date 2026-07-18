@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -16,77 +17,60 @@ class CategoryController extends Controller
         $this->categoryService = $categoryService;
     }
 
-    /**
-     * Menampilkan daftar category
-     */
     public function index(): View
     {
         $categories = $this->categoryService->getCategories();
-
         return view('categories.index', compact('categories'));
     }
 
-    /**
-     * Form tambah category
-     */
     public function create(): View
     {
         return view('categories.create');
     }
 
-    /**
-     * Simpan category
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nama'=>'required|max:100',
-            'description'=>'nullable|max:255'
+            'nama'        => 'required|max:100',
+            'description' => 'nullable|max:255',
         ]);
 
         $this->categoryService->createCategory($validated);
 
-        return redirect()
-                ->route('categories.index')
-                ->with('success','Category berhasil ditambahkan.');
+        ActivityLog::record('Tambah Kategori', 'Kategori', $validated['nama']);
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
 
-    /**
-     * Form edit
-     */
     public function edit(int $id): View
     {
         $category = $this->categoryService->getCategoryById($id);
-
         return view('categories.edit', compact('category'));
     }
 
-    /**
-     * Update category
-     */
-    public function update(Request $request,int $id): RedirectResponse
+    public function update(Request $request, int $id): RedirectResponse
     {
         $validated = $request->validate([
-            'nama'=>'required|max:100',
-            'description'=>'nullable|max:255'
+            'nama'        => 'required|max:100',
+            'description' => 'nullable|max:255',
         ]);
 
-        $this->categoryService->updateCategory($id,$validated);
+        $this->categoryService->updateCategory($id, $validated);
 
-        return redirect()
-                ->route('categories.index')
-                ->with('success','Category berhasil diupdate.');
+        ActivityLog::record('Edit Kategori', 'Kategori', $validated['nama']);
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diupdate.');
     }
 
-    /**
-     * Delete
-     */
     public function destroy(int $id): RedirectResponse
     {
+        $category = $this->categoryService->getCategoryById($id);
+        $nama     = $category->nama;
+
         $this->categoryService->deleteCategory($id);
 
-        return redirect()
-                ->route('categories.index')
-                ->with('success','Category berhasil dihapus.');
+        ActivityLog::record('Hapus Kategori', 'Kategori', $nama);
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
 }

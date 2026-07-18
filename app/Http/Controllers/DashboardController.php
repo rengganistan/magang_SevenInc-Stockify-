@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\StockTransaction;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -35,8 +36,8 @@ class DashboardController extends Controller
             ->where('stok', '>', 0)
             ->count();
 
-        // Aktivitas terbaru (10 terakhir)
-        $recentActivities   = StockTransaction::with(['product', 'user'])
+        // Aktivitas terbaru (10 terakhir) dari activity_logs
+        $recentActivities = ActivityLog::with('user')
             ->latest()
             ->take(10)
             ->get();
