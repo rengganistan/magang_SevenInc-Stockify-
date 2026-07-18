@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Supplier;
@@ -19,10 +20,11 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = $this->productService->getProducts();
-        return view('products.index', compact('products'));
+        $search   = $request->input('search');
+        $products = $this->productService->getProducts($search);
+        return view('products.index', compact('products', 'search'));
     }
 
     public function create(): View
