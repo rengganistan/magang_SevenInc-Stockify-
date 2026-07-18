@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
-
 class LoginController extends Controller
 {
     protected AuthService $authService;
@@ -18,45 +17,52 @@ class LoginController extends Controller
         $this->authService = $authService;
     }
 
-    /**
-     * Menampilkan halaman login
-     */
     public function index(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Memproses login
-     */
-public function login(Request $request): RedirectResponse
-{
-    $result = $this->authService->login(
-        $request->email,
-        $request->password
-    );
+    public function login(Request $request): RedirectResponse
+    {
+        $result = $this->authService->login(
+            $request->email,
+            $request->password
+        );
 
-    if (!$result['success']) {
+        if (!$result['success']) {
+            return back()
+                ->withErrors(['email' => $result['message']])
+                ->withInput();
+        }
 
-        return back()
-            ->withErrors([
-                'email' => $result['message']
-            ])
-            ->withInput();
+        $user = $result['user'];
+
+        ActivityLog::record('Login', 'User', $user->name, 'Role: ' . $user->role);
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->role === 'manager') {
+            return redirect()->route('manager.dashboard');
+        }
+
+        return redirect()->route('staff.dashboard');
     }
 
-    $user = $result['user'];
+    public function logout(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
 
-    ActivityLog::record('Login', 'User', $user->name, 'Role: ' . $user->role);
+        if ($user) {
+            ActivityLog::record('Logout', 'User', $user->name, 'Role: ' . $user->role);
+        }
 
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
+        auth()->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
-
-    if ($user->role === 'manager') {
-        return redirect()->route('manager.dashboard');
-    }
-
-    return redirect()->route('staff.dashboard');
-}
 }

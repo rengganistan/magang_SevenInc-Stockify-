@@ -6,7 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Login Stockify</title>
+    @php $setting = \App\Models\Setting::first(); @endphp
+
+    <title>Login {{ $setting->app_name ?? 'Stockify' }}</title>
 
     @vite(['resources/css/app.css','resources/js/app.js'])
 
@@ -19,12 +21,19 @@
     <a href="{{ url('/') }}"
         class="flex items-center mb-8 text-2xl font-semibold text-white">
 
-        <img
-            src="{{ asset('static/images/logo.svg') }}"
-            class="h-10 mr-3"
-            alt="Logo">
+        @if(!empty($setting->logo))
+          <img
+              src="{{ asset('storage/' . $setting->logo) }}"
+              class="h-10 mr-3"
+              alt="{{ $setting->app_name ?? 'Logo' }}">
+        @else
+          <img
+              src="{{ asset('static/images/logo.svg') }}"
+              class="h-10 mr-3"
+              alt="Logo">
+        @endif
 
-        Stockify
+        {{ $setting->app_name ?? 'Stockify' }}
 
     </a>
 
