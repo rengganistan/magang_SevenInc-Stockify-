@@ -85,25 +85,29 @@
                     <tr class="bg-gray-700/50">
                         <th class="px-5 py-3 text-left text-gray-400 font-medium">Pengguna</th>
                         <th class="px-5 py-3 text-left text-gray-400 font-medium">Aktivitas</th>
-                        <th class="px-5 py-3 text-left text-gray-400 font-medium">Produk</th>
-                        <th class="px-5 py-3 text-center text-gray-400 font-medium">Qty</th>
-                        <th class="px-5 py-3 text-left text-gray-400 font-medium">Tanggal</th>
+                        <th class="px-5 py-3 text-left text-gray-400 font-medium">Detail</th>
+                        <th class="px-5 py-3 text-center text-gray-400 font-medium">—</th>
+                        <th class="px-5 py-3 text-left text-gray-400 font-medium">Waktu</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-700">
                     @forelse($recentActivities as $activity)
                     <tr class="hover:bg-gray-700/40 transition">
-                        <td class="px-5 py-3 text-white font-medium">{{ $activity->user->name }}</td>
+                        <td class="px-5 py-3 text-white font-medium">{{ $activity->user->name ?? '-' }}</td>
                         <td class="px-5 py-3">
-                            @if($activity->type === 'Masuk')
-                                <span class="px-2 py-0.5 rounded-full bg-green-600/20 text-green-400 text-xs">Masuk</span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-full bg-red-600/20 text-red-400 text-xs">Keluar</span>
-                            @endif
+                            @php
+                                $a = strtolower($activity->action);
+                                $c = 'bg-blue-600/20 text-blue-400';
+                                if (str_contains($a, 'tambah') || str_contains($a, 'masuk') || str_contains($a, 'login') || str_contains($a, 'buat') || str_contains($a, 'import')) $c = 'bg-green-600/20 text-green-400';
+                                elseif (str_contains($a, 'hapus')) $c = 'bg-red-600/20 text-red-400';
+                                elseif (str_contains($a, 'keluar')) $c = 'bg-orange-600/20 text-orange-400';
+                                elseif (str_contains($a, 'edit') || str_contains($a, 'selesai')) $c = 'bg-yellow-500/20 text-yellow-400';
+                            @endphp
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $c }}">{{ $activity->action }}</span>
                         </td>
-                        <td class="px-5 py-3 text-gray-300">{{ $activity->product->nama ?? '-' }}</td>
-                        <td class="px-5 py-3 text-center text-white">{{ $activity->quantity }}</td>
-                        <td class="px-5 py-3 text-gray-400 text-xs">{{ \Carbon\Carbon::parse($activity->date)->format('d M Y') }}</td>
+                        <td class="px-5 py-3 text-gray-300 text-sm">{{ $activity->model_name ?? $activity->model ?? '-' }}</td>
+                        <td class="px-5 py-3 text-center text-gray-400">-</td>
+                        <td class="px-5 py-3 text-gray-400 text-xs">{{ $activity->created_at->format('d M Y, H:i') }}</td>
                     </tr>
                     @empty
                     <tr>

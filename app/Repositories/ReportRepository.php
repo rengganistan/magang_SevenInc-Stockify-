@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockTransaction;
+use App\Models\ActivityLog;
 use App\Models\User;
 
 class ReportRepository
@@ -78,13 +79,13 @@ class ReportRepository
     |--------------------------------------------------------------------------
     */
 
-    public function activity()
+    public function activity($user = null, $start = null, $end = null)
     {
-        return StockTransaction::with([
-            'product',
-            'user'
-        ])
-        ->latest()
-        ->get();
+        return ActivityLog::with('user')
+            ->when($user, fn($q) => $q->where('user_id', $user))
+            ->when($start, fn($q) => $q->whereDate('created_at', '>=', $start))
+            ->when($end,   fn($q) => $q->whereDate('created_at', '<=', $end))
+            ->latest()
+            ->get();
     }
 }

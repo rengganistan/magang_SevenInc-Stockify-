@@ -63,13 +63,16 @@ class ReportController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function activity()
+    public function activity(Request $request)
     {
-        $activities = $this->service->activity();
-
-        return view(
-            'reports.activity',
-            compact('activities')
+        $activities = $this->service->activity(
+            $request->user_id,
+            $request->start_date,
+            $request->end_date
         );
+
+        $users = \App\Models\User::orderBy('name')->get();
+
+        return view('reports.activity', compact('activities', 'users'));
     }
 }

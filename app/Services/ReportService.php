@@ -56,8 +56,8 @@ class ReportService
     |--------------------------------------------------------------------------
     */
 
-    public function activity()
+    public function activity($user = null, $start = null, $end = null)
     {
-        return $this->repository->activity();
+        return $this->repository->activity($user, $start, $end);
     }
 }
