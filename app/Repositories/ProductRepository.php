@@ -10,7 +10,7 @@ class ProductRepository
     /**
      * Ambil semua produk beserta kategori, dengan opsional filter pencarian.
      */
-    public function getAll(?string $search = null)
+    public function getAll(?string $search = null, ?string $stokFilter = null)
     {
         $query = Product::with([
             'category',
@@ -23,6 +23,12 @@ class ProductRepository
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('kode', 'like', "%{$search}%");
             });
+        }
+
+        if ($stokFilter === 'habis') {
+            $query->where('stok', 0);
+        } elseif ($stokFilter === 'menipis') {
+            $query->whereColumn('stok', '<=', 'stok_minimum')->where('stok', '>', 0);
         }
 
         return $query->latest()->paginate(10)->withQueryString();

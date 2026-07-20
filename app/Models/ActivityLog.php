@@ -39,5 +39,8 @@ class ActivityLog extends Model
             'model_name' => $modelName,
             'keterangan' => $keterangan,
         ]);
+
+        // Bust cache navbar notifikasi
+        \Illuminate\Support\Facades\Cache::forget('nav_notifications');
     }
 }
