@@ -120,14 +120,53 @@ public function outgoing()
 
     public function edit($id)
     {
-        $transaction = $this->service
-            ->getTransactionById($id);
+        $transaction = $this->service->getTransactionById($id);
+        $products    = Product::orderBy('nama')->get();
+        $suppliers   = Supplier::orderBy('nama')->get();
 
-        $products = Product::orderBy('nama')
-            ->get();
+        return view('stock-transactions.edit', compact('transaction', 'products', 'suppliers'));
+    }
 
-        return redirect()
-    ->route('transactions.incoming');
+    /*
+    |--------------------------------------------------------------------------
+    | CONFIRM PENDING
+    |--------------------------------------------------------------------------
+    */
+
+    public function confirm($id)
+    {
+        $tx = \App\Models\StockTransaction::with('product')->findOrFail($id);
+
+        if ($tx->status !== 'Pending') {
+            return back()->with('error', 'Transaksi ini sudah dikonfirmasi sebelumnya.');
+        }
+
+        $product = $tx->product;
+
+        if ($tx->type === 'Masuk') {
+            $product->stok += $tx->quantity;
+            $newStatus = 'Diterima';
+        } else {
+            if ($product->stok < $tx->quantity) {
+                return back()->with('error', 'Stok produk tidak mencukupi untuk dikonfirmasi.');
+            }
+            $product->stok -= $tx->quantity;
+            $newStatus = 'Dikeluarkan';
+        }
+
+        $product->save();
+        $tx->update(['status' => $newStatus]);
+
+        ActivityLog::record(
+            'Konfirmasi ' . ($tx->type === 'Masuk' ? 'Barang Masuk' : 'Barang Keluar'),
+            'Transaksi',
+            $product->nama ?? '-',
+            'Qty: ' . $tx->quantity . ' | Status: ' . $newStatus
+        );
+
+        $route = $tx->type === 'Masuk' ? 'transactions.incoming' : 'transactions.outgoing';
+
+        return redirect()->route($route)->with('success', 'Transaksi berhasil dikonfirmasi. Stok telah diperbarui.');
     }
 
     /*

@@ -29,9 +29,16 @@ class ManagerProductController extends Controller
 
     public function index(Request $request): View
     {
-        $search   = $request->input('search');
-        $products = $this->productService->getProducts($search);
-        return view('manager.products.index', compact('products', 'search'));
+        $search     = $request->input('search');
+        $stokFilter = $request->input('stok');
+        $products   = $this->productService->getProducts($search, $stokFilter);
+
+        $totalProducts = \App\Models\Product::count();
+        $totalKategori = \App\Models\Product::distinct('category_id')->count('category_id');
+        $stokMenipis   = \App\Models\Product::whereColumn('stok', '<=', 'stok_minimum')->where('stok', '>', 0)->count();
+        $stokHabis     = \App\Models\Product::where('stok', 0)->count();
+
+        return view('manager.products.index', compact('products', 'search', 'stokFilter', 'totalProducts', 'totalKategori', 'stokMenipis', 'stokHabis'));
     }
 
     public function create(): View

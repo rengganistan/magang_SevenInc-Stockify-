@@ -18,9 +18,16 @@ class StaffProductController extends Controller
 
     public function index(Request $request): View
     {
-        $search   = $request->input('search');
-        $products = $this->service->getProducts($search);
-        return view('staff.products.index', compact('products', 'search'));
+        $search     = $request->input('search');
+        $stokFilter = $request->input('stok');
+        $products   = $this->service->getProducts($search, $stokFilter);
+
+        $totalProducts = \App\Models\Product::count();
+        $totalKategori = \App\Models\Product::distinct('category_id')->count('category_id');
+        $stokMenipis   = \App\Models\Product::whereColumn('stok', '<=', 'stok_minimum')->where('stok', '>', 0)->count();
+        $stokHabis     = \App\Models\Product::where('stok', 0)->count();
+
+        return view('staff.products.index', compact('products', 'search', 'stokFilter', 'totalProducts', 'totalKategori', 'stokMenipis', 'stokHabis'));
     }
 
     public function show(int $id): View

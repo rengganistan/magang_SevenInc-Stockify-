@@ -74,4 +74,43 @@ class ManagerStockTransactionController extends Controller
         return redirect()->route('manager.transactions.incoming')
             ->with('success', 'Transaksi berhasil dihapus.');
     }
+
+    public function confirm($id)
+    {
+        $tx = \App\Models\StockTransaction::with('product')->findOrFail($id);
+
+        if ($tx->status !== 'Pending') {
+            return back()->with('error', 'Transaksi ini sudah dikonfirmasi sebelumnya.');
+        }
+
+        $product = $tx->product;
+
+        if ($tx->type === 'Masuk') {
+            $product->stok += $tx->quantity;
+            $newStatus = 'Diterima';
+        } else {
+            if ($product->stok < $tx->quantity) {
+                return back()->with('error', 'Stok produk tidak mencukupi untuk dikonfirmasi.');
+            }
+            $product->stok -= $tx->quantity;
+            $newStatus = 'Dikeluarkan';
+        }
+
+        $product->save();
+        $tx->update(['status' => $newStatus]);
+
+        ActivityLog::record(
+            'Konfirmasi ' . ($tx->type === 'Masuk' ? 'Barang Masuk' : 'Barang Keluar'),
+            'Transaksi',
+            $product->nama ?? '-',
+            'Qty: ' . $tx->quantity . ' | Status: ' . $newStatus
+        );
+
+        $route = $tx->type === 'Masuk'
+            ? 'manager.transactions.incoming'
+            : 'manager.transactions.outgoing';
+
+        return redirect()->route($route)
+            ->with('success', 'Transaksi berhasil dikonfirmasi. Stok telah diperbarui.');
+    }
 }

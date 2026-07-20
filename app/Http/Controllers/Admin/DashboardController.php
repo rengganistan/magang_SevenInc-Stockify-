@@ -44,25 +44,32 @@ class DashboardController extends Controller
             ->get();
 
         // Data grafik: transaksi masuk & keluar per bulan (12 bulan terakhir)
-        $chartLabels  = [];
+        // Satu query, group by bulan & type
+        $start = Carbon::now()->subMonths(11)->startOfMonth();
+
+        $chartRaw = StockTransaction::selectRaw(
+                "type, DATE_FORMAT(date, '%Y-%m') as ym, COUNT(*) as total"
+            )
+            ->where('date', '>=', $start)
+            ->groupBy('type', 'ym')
+            ->get()
+            ->groupBy('type');
+
+        $chartLabels   = [];
         $chartIncoming = [];
         $chartOutgoing = [];
 
         for ($i = 11; $i >= 0; $i--) {
-            $date   = Carbon::now()->subMonths($i);
-            $label  = $date->format('M Y');
-            $m      = $date->month;
-            $y      = $date->year;
+            $date  = Carbon::now()->subMonths($i);
+            $ym    = $date->format('Y-m');
 
-            $chartLabels[]   = $label;
-            $chartIncoming[] = StockTransaction::where('type', 'Masuk')
-                ->whereMonth('date', $m)
-                ->whereYear('date', $y)
-                ->count();
-            $chartOutgoing[] = StockTransaction::where('type', 'Keluar')
-                ->whereMonth('date', $m)
-                ->whereYear('date', $y)
-                ->count();
+            $chartLabels[]   = $date->format('M Y');
+            $chartIncoming[] = (int) optional(
+                $chartRaw->get('Masuk', collect())->firstWhere('ym', $ym)
+            )->total ?? 0;
+            $chartOutgoing[] = (int) optional(
+                $chartRaw->get('Keluar', collect())->firstWhere('ym', $ym)
+            )->total ?? 0;
         }
 
         // Top 5 produk stok terbanyak untuk grafik stok
@@ -115,21 +122,32 @@ class DashboardController extends Controller
             ->whereYear('date', $thisYear)
             ->count();
 
-        // Grafik 6 bulan terakhir
+        // Grafik 6 bulan terakhir — satu query, group by bulan & type
+        $chartStart = Carbon::now()->subMonths(5)->startOfMonth();
+
+        $chartRaw = StockTransaction::selectRaw(
+                "type, DATE_FORMAT(date, '%Y-%m') as ym, COUNT(*) as total"
+            )
+            ->where('date', '>=', $chartStart)
+            ->groupBy('type', 'ym')
+            ->get()
+            ->groupBy('type');
+
         $chartLabels   = [];
         $chartIncoming = [];
         $chartOutgoing = [];
 
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            $m    = $date->month;
-            $y    = $date->year;
+            $ym   = $date->format('Y-m');
 
             $chartLabels[]   = $date->format('M Y');
-            $chartIncoming[] = StockTransaction::where('type', 'Masuk')
-                ->whereMonth('date', $m)->whereYear('date', $y)->count();
-            $chartOutgoing[] = StockTransaction::where('type', 'Keluar')
-                ->whereMonth('date', $m)->whereYear('date', $y)->count();
+            $chartIncoming[] = (int) optional(
+                $chartRaw->get('Masuk', collect())->firstWhere('ym', $ym)
+            )->total ?? 0;
+            $chartOutgoing[] = (int) optional(
+                $chartRaw->get('Keluar', collect())->firstWhere('ym', $ym)
+            )->total ?? 0;
         }
 
         // Produk stok menipis (list)

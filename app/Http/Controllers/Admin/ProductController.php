@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Exports\ProductExport;
-use App\Exports\ProductTemplateExport;
 use App\Imports\ProductImport;
 use App\Models\ActivityLog;
 use App\Models\Category;
@@ -27,8 +26,16 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $search   = $request->input('search');
-        $products = $this->productService->getProducts($search);
-        return view('products.index', compact('products', 'search'));
+        $stokFilter = $request->input('stok'); // 'menipis' | 'habis' | null
+        $products = $this->productService->getProducts($search, $stokFilter);
+
+        // Stat cards — query langsung biar akurat (bukan dari paginated)
+        $totalProducts  = \App\Models\Product::count();
+        $totalKategori  = \App\Models\Product::distinct('category_id')->count('category_id');
+        $stokMenipis    = \App\Models\Product::whereColumn('stok', '<=', 'stok_minimum')->where('stok', '>', 0)->count();
+        $stokHabis      = \App\Models\Product::where('stok', 0)->count();
+
+        return view('products.index', compact('products', 'search', 'stokFilter', 'totalProducts', 'totalKategori', 'stokMenipis', 'stokHabis'));
     }
 
     public function create(): View
@@ -58,11 +65,12 @@ class ProductController extends Controller
             $validated['gambar'] = $request->file('gambar')->store('products', 'public');
         }
 
-        $this->productService->createProduct($validated);
+        $product = $this->productService->createProduct($validated);
 
         ActivityLog::record('Tambah Produk', 'Produk', $validated['nama']);
 
-        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()->route('products.edit', $product->id)
+            ->with('success', 'Produk berhasil ditambahkan. Tambahkan atribut produk di bawah ini.');
     }
 
     public function edit(int $id): View
@@ -152,15 +160,5 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil diimport.');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | DOWNLOAD TEMPLATE
-    |--------------------------------------------------------------------------
-    */
-    public function downloadTemplate()
-    {
-        return Excel::download(new ProductTemplateExport, 'template-produk.xlsx');
     }
 }

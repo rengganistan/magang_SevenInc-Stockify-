@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -69,6 +70,9 @@ class SettingController extends Controller
             $id,
             $validated
         );
+
+        // Bust cache navbar setting supaya perubahan nama & logo langsung tampil
+        Cache::forget('nav_setting');
 
         return redirect()
             ->route('settings.index')
