@@ -76,7 +76,16 @@
 
           {{-- Notifications --}}
           @php
-            $totalNotif = ($navNotifications ?? collect())->count() + ($navLowStockProducts ?? collect())->count();
+            $totalNotif = 0;
+            if ($userRole === 'admin') {
+                $totalNotif = ($navNotifications ?? collect())->count()
+                    + ($navLowStockProducts ?? collect())->count()
+                    + ($navPendingCount ?? 0 > 0 ? 1 : 0);
+            } else {
+                $totalNotif = ($navPendingCount ?? 0 > 0 ? 1 : 0)
+                    + ($navLowStockProducts ?? collect())->count()
+                    + ($navRecentTransactions ?? collect())->count();
+            }
           @endphp
           <button type="button" data-dropdown-toggle="notification-dropdown"
             class="relative p-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
@@ -93,71 +102,157 @@
 
           {{-- Notification Dropdown --}}
           <div class="z-50 hidden max-w-sm w-80 my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-lg dark:divide-gray-600 dark:bg-gray-700" id="notification-dropdown">
-            <div class="block px-4 py-2 text-base font-semibold text-center text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+            <div class="block px-4 py-2 text-sm font-semibold text-center text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
               Notifikasi
             </div>
-            <div class="overflow-y-auto max-h-80">
+            <div class="overflow-y-auto max-h-96">
 
-              {{-- Stok Menipis --}}
-              @forelse($navLowStockProducts ?? [] as $product)
-              <a href="{{ route($productsRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center w-11 h-11 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
-                  </div>
-                </div>
-                <div class="w-full pl-3">
-                  <div class="text-gray-500 font-normal text-sm mb-1 dark:text-gray-400">
-                    Stok <span class="font-semibold text-gray-900 dark:text-white">{{ $product->nama }}</span>
-                    menipis — sisa <span class="font-semibold text-red-600">{{ $product->stok }}</span>
-                    (min: {{ $product->stok_minimum }})
-                  </div>
-                  <div class="text-xs font-medium text-yellow-600 dark:text-yellow-400">Peringatan Stok</div>
-                </div>
-              </a>
-              @endforeach
+              @php
+                $pendingRoute = match($userRole) {
+                    'admin'   => 'transactions.incoming',
+                    'manager' => 'manager.transactions.incoming',
+                    default   => 'staff.transactions.incoming',
+                };
+              @endphp
 
-              {{-- Activity Log --}}
-              @forelse($navNotifications ?? [] as $notif)
-              <a href="{{ route($activityRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600 last:border-b-0">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center w-11 h-11 rounded-full bg-blue-100 dark:bg-blue-900">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                    </svg>
+              @if($userRole === 'admin')
+                {{-- ===== ADMIN: semua notif ===== --}}
+
+                {{-- Pending --}}
+                @if(($navPendingCount ?? 0) > 0)
+                <a href="{{ route($pendingRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900">
+                    <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
                   </div>
-                </div>
-                <div class="w-full pl-3">
-                  <div class="text-gray-500 font-normal text-sm mb-1 dark:text-gray-400">
-                    <span class="font-semibold text-gray-900 dark:text-white">{{ $notif->user->name ?? 'Sistem' }}</span>
-                    {{ $notif->action }}
-                    @php $act = strtolower($notif->action); @endphp
-                    @if($notif->model_name && !str_contains($act, 'login') && !str_contains($act, 'logout'))
-                      — <span class="text-gray-700 dark:text-gray-300">{{ $notif->model_name }}</span>
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      <span class="font-semibold text-orange-500">{{ $navPendingCount }}</span> transaksi menunggu konfirmasi
+                    </p>
+                    <p class="text-xs text-orange-400 mt-0.5">Klik untuk konfirmasi →</p>
+                  </div>
+                </a>
+                @endif
+
+                {{-- Stok Menipis --}}
+                @foreach($navLowStockProducts ?? [] as $product)
+                <a href="{{ route($productsRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                    <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      Stok <span class="font-semibold">{{ $product->nama }}</span> menipis
+                      — sisa <span class="font-semibold text-red-500">{{ $product->stok }}</span> (min: {{ $product->stok_minimum }})
+                    </p>
+                    <p class="text-xs text-yellow-500 mt-0.5">Peringatan Stok</p>
+                  </div>
+                </a>
+                @endforeach
+
+                {{-- Activity Log terbaru --}}
+                @foreach($navNotifications ?? [] as $notif)
+                <a href="{{ route('reports.activity') }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900">
+                    <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      <span class="font-semibold">{{ $notif->user->name ?? 'Sistem' }}</span>
+                      {{ $notif->action }}
+                      @if($notif->model_name && !str_contains(strtolower($notif->action), 'login') && !str_contains(strtolower($notif->action), 'logout'))
+                        — {{ $notif->model_name }}
+                      @endif
+                    </p>
+                    <p class="text-xs text-blue-400 mt-0.5">{{ $notif->created_at->diffForHumans() }}</p>
+                  </div>
+                </a>
+                @endforeach
+
+                @if(($navPendingCount ?? 0) == 0 && ($navLowStockProducts ?? collect())->isEmpty() && ($navNotifications ?? collect())->isEmpty())
+                <div class="px-4 py-8 text-center text-sm text-gray-400">Tidak ada notifikasi</div>
+                @endif
+
+              @else
+                {{-- ===== MANAGER & STAFF: transaksi + stok menipis + pending ===== --}}
+
+                {{-- Pending --}}
+                @if(($navPendingCount ?? 0) > 0)
+                <a href="{{ route($pendingRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900">
+                    <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      <span class="font-semibold text-orange-500">{{ $navPendingCount }}</span> transaksi butuh konfirmasi
+                    </p>
+                    <p class="text-xs text-orange-400 mt-0.5">Klik untuk lihat →</p>
+                  </div>
+                </a>
+                @endif
+
+                {{-- Stok Menipis --}}
+                @foreach($navLowStockProducts ?? [] as $product)
+                <a href="{{ route($productsRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                    <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  </div>
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      Stok <span class="font-semibold">{{ $product->nama }}</span> menipis
+                      — sisa <span class="font-semibold text-red-500">{{ $product->stok }}</span>
+                    </p>
+                    <p class="text-xs text-yellow-500 mt-0.5">Peringatan Stok</p>
+                  </div>
+                </a>
+                @endforeach
+
+                {{-- Transaksi Terbaru --}}
+                @foreach($navRecentTransactions ?? [] as $tx)
+                @php
+                  $txRoute = $tx->type === 'Masuk'
+                    ? ($userRole === 'manager' ? 'manager.transactions.incoming' : 'staff.transactions.incoming')
+                    : ($userRole === 'manager' ? 'manager.transactions.outgoing' : 'staff.transactions.outgoing');
+                @endphp
+                <a href="{{ route($txRoute) }}" class="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full {{ $tx->type === 'Masuk' ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900' }}">
+                    @if($tx->type === 'Masuk')
+                      <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/></svg>
+                    @else
+                      <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/></svg>
                     @endif
                   </div>
-                  <div class="text-xs font-medium text-blue-600 dark:text-blue-400">
-                    {{ $notif->created_at->diffForHumans() }}
+                  <div class="w-full pl-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">
+                      <span class="font-semibold {{ $tx->type === 'Masuk' ? 'text-green-500' : 'text-red-500' }}">{{ $tx->type === 'Masuk' ? 'Barang Masuk' : 'Barang Keluar' }}</span>
+                      — {{ $tx->product->nama ?? '-' }}
+                      <span class="text-gray-500">({{ $tx->quantity }} pcs)</span>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                      {{ $tx->created_at->diffForHumans() }}
+                      @if($tx->status === 'Pending')
+                        · <span class="text-orange-400 font-medium">Pending</span>
+                      @endif
+                    </p>
                   </div>
-                </div>
-              </a>
-              @empty
-                @if(($navLowStockProducts ?? collect())->isEmpty())
-                <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Tidak ada notifikasi terbaru
-                </div>
+                </a>
+                @endforeach
+
+                @if(($navPendingCount ?? 0) == 0 && ($navLowStockProducts ?? collect())->isEmpty() && ($navRecentTransactions ?? collect())->isEmpty())
+                <div class="px-4 py-8 text-center text-sm text-gray-400">Tidak ada notifikasi</div>
                 @endif
-              @endforelse
+
+              @endif
 
             </div>
+
+            {{-- Footer --}}
             @if($userRole === 'admin')
-            <a href="{{ route('reports.activity') }}" class="block py-2 text-sm font-medium text-center text-gray-900 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:underline">
-              <div class="inline-flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
-                Lihat semua aktivitas
-              </div>
+            <a href="{{ route('reports.activity') }}" class="block py-2.5 text-xs font-medium text-center text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white">
+              Lihat semua aktivitas →
+            </a>
+            @else
+            <a href="{{ route($pendingRoute) }}" class="block py-2.5 text-xs font-medium text-center text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-white">
+              Lihat semua transaksi →
             </a>
             @endif
           </div>

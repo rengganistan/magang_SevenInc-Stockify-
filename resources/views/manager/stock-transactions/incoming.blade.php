@@ -45,7 +45,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-700">
                     @forelse($transactions as $tx)
-                    <tr class="hover:bg-gray-700 transition">
+                    <tr class="hover:bg-gray-700 transition {{ $tx->status === 'Pending' ? 'bg-yellow-900/10' : '' }}">
                         <td class="px-6 py-4 text-white">{{ $loop->iteration }}</td>
                         <td class="px-6 py-4 text-gray-300">
                             {{ \Carbon\Carbon::parse($tx->date)->format('d M Y') }}
@@ -53,14 +53,29 @@
                         <td class="px-6 py-4 text-white font-semibold">{{ $tx->product->nama ?? '-' }}</td>
                         <td class="px-6 py-4 text-center text-white">{{ $tx->quantity }}</td>
                         <td class="px-6 py-4 text-center">
-                            <span class="px-3 py-1 rounded-full bg-green-600/20 text-green-400 text-xs font-semibold">
-                                {{ $tx->status }}
-                            </span>
+                            @if($tx->status === 'Pending')
+                                <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-xs font-semibold animate-pulse">
+                                    ⏳ Pending
+                                </span>
+                            @else
+                                <span class="px-3 py-1 rounded-full bg-red-600/20 text-red-400 text-xs font-semibold">
+                                    ✓ {{ $tx->status }}
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-gray-300">{{ $tx->user->name ?? '-' }}</td>
                         <td class="px-6 py-4 text-gray-400 text-sm">{{ $tx->notes ?? '-' }}</td>
                         <td class="px-6 py-4">
-                            <div class="flex justify-center">
+                            <div class="flex justify-center gap-2">
+                                @if($tx->status === 'Pending')
+                                <form action="{{ route('manager.transactions.confirm', $tx->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit"
+                                        class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold">
+                                        ✓ Konfirmasi
+                                    </button>
+                                </form>
+                                @endif
                                 <form action="{{ route('manager.transactions.destroy', $tx->id) }}"
                                     method="POST" class="delete-form">
                                     @csrf

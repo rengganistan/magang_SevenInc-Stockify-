@@ -23,29 +23,27 @@
 
         <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
             <p class="text-gray-400 text-sm">Total Produk</p>
-            <h2 class="text-3xl font-bold text-white mt-2">{{ $products->total() }}</h2>
+            <h2 class="text-3xl font-bold text-white mt-2">{{ $totalProducts }}</h2>
         </div>
 
         <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
             <p class="text-gray-400 text-sm">Total Kategori</p>
-            <h2 class="text-3xl font-bold text-green-400 mt-2">
-                {{ $products->getCollection()->pluck('category_id')->unique()->count() }}
-            </h2>
+            <h2 class="text-3xl font-bold text-green-400 mt-2">{{ $totalKategori }}</h2>
         </div>
 
-        <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
+        <a href="{{ route('manager.products.index', ['stok' => 'menipis']) }}"
+            class="bg-gray-800 rounded-xl p-5 border {{ ($stokFilter ?? '') === 'menipis' ? 'border-yellow-500' : 'border-gray-700' }} hover:border-yellow-500 transition group block">
             <p class="text-gray-400 text-sm">Stok Menipis</p>
-            <h2 class="text-3xl font-bold text-yellow-400 mt-2">
-                {{ $products->getCollection()->filter(fn($p) => $p->stok > 0 && $p->stok <= $p->stok_minimum)->count() }}
-            </h2>
-        </div>
+            <h2 class="text-3xl font-bold text-yellow-400 mt-2">{{ $stokMenipis }}</h2>
+            <p class="text-xs text-yellow-500 mt-1 group-hover:underline">Lihat Semua →</p>
+        </a>
 
-        <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
+        <a href="{{ route('manager.products.index', ['stok' => 'habis']) }}"
+            class="bg-gray-800 rounded-xl p-5 border {{ ($stokFilter ?? '') === 'habis' ? 'border-red-500' : 'border-gray-700' }} hover:border-red-500 transition group block">
             <p class="text-gray-400 text-sm">Stok Habis</p>
-            <h2 class="text-3xl font-bold text-red-500 mt-2">
-                {{ $products->getCollection()->where('stok', 0)->count() }}
-            </h2>
-        </div>
+            <h2 class="text-3xl font-bold text-red-500 mt-2">{{ $stokHabis }}</h2>
+            <p class="text-xs text-red-400 mt-1 group-hover:underline">Lihat Semua →</p>
+        </a>
 
     </div>
 

@@ -102,7 +102,7 @@
 
                     @forelse($transactions as $transaction)
 
-                        <tr class="hover:bg-gray-700">
+                        <tr class="hover:bg-gray-700 {{ $transaction->status === 'Pending' ? 'bg-yellow-900/10' : '' }}">
 
                             <td class="px-6 py-5 text-white">
                                 {{ $loop->iteration }}
@@ -121,51 +121,50 @@
                             </td>
 
                             <td class="px-6 py-5 text-center">
-
-                                <span class="px-3 py-1 rounded-full bg-red-600 text-white">
-
-                                    {{ $transaction->status }}
-
-                                </span>
-
+                                @if($transaction->status === 'Pending')
+                                    <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 text-xs font-semibold animate-pulse">
+                                        ⏳ Pending
+                                    </span>
+                                @else
+                                    <span class="px-3 py-1 rounded-full bg-red-600/20 text-red-400 text-xs font-semibold">
+                                        ✓ {{ $transaction->status }}
+                                    </span>
+                                @endif
                             </td>
 
                             <td class="px-6 py-5 text-gray-300">
-
                                 {{ $transaction->user->name }}
-
                             </td>
 
                             <td class="px-6 py-5">
-
                                 <div class="flex justify-center gap-2">
 
-                                    <a href="{{ route('transactions.edit',$transaction->id) }}"
-                                        class="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white">
-
+                                    @if($transaction->status === 'Pending')
+                                    <form action="{{ route('transactions.confirm', $transaction->id) }}" method="POST">
+                                        @csrf
+                                        <button type="submit"
+                                            class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold">
+                                            ✓ Konfirmasi
+                                        </button>
+                                    </form>
+                                    @else
+                                    <a href="{{ route('transactions.edit', $transaction->id) }}"
+                                        class="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm">
                                         Edit
-
                                     </a>
+                                    @endif
 
-                                    <form
-                                        action="{{ route('transactions.destroy',$transaction->id) }}"
-                                        method="POST">
-
+                                    <form action="{{ route('transactions.destroy',$transaction->id) }}"
+                                        method="POST" class="delete-form">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white">
-
+                                        <button type="submit"
+                                            class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm">
                                             Hapus
-
                                         </button>
-
                                     </form>
 
                                 </div>
-
                             </td>
 
                         </tr>

@@ -95,12 +95,14 @@
             <p class="text-2xl font-bold text-white">{{ $transactions->count() }}</p>
         </div>
         <div class="rounded-xl border border-gray-700 bg-gray-800 p-4 text-center">
-            <p class="text-xs text-gray-400 mb-1">Selisih Unit</p>
+            <p class="text-xs text-gray-400 mb-1">Net Unit (Masuk - Keluar)</p>
             @php $selisih = $qtyMasuk - $qtyKeluar; @endphp
             <p class="text-2xl font-bold {{ $selisih >= 0 ? 'text-green-400' : 'text-red-400' }}">
                 {{ $selisih >= 0 ? '+' : '' }}{{ $selisih }}
             </p>
-            <p class="text-xs text-gray-500 mt-1">masuk - keluar</p>
+            <p class="text-xs text-gray-500 mt-1">
+                {{ $selisih >= 0 ? 'Stok bertambah' : 'Stok berkurang' }} dalam periode ini
+            </p>
         </div>
     </div>
 
